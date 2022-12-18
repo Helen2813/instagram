@@ -1,10 +1,11 @@
 import React from 'react';
 import Image from "next/image";
-import { SearchIcon } from "@heroicons/react/outline"
+import { SearchIcon, PlusCircleIcon } from "@heroicons/react/outline";
+import { HomeIcon } from "@heroicons/react/solid";
 
 function Header() {
   return (
-    <div className="flex items-center justify-between max-w-6xl">
+    <div className="flex items-center justify-between max-w-6xl mx-4 xl:mx-auto">
         <div className="h-20 w-28 relative hidden cursor-pointer lg:inline-grid">
           <Image
             width="200"
@@ -30,6 +31,15 @@ function Header() {
         <input
           className="bg-gray-50 pl-10 border-gray-500 text-sm focus:ring-black focus:border-black rounded-md"
           type="text" placeholder="Search"
+        />
+      </div>
+      <div className="flex space-x-4 items-center">
+        <HomeIcon className="hidden md:inline-flex h-6 cursor-pointer hover:scale-125 transition-transform duration-200" />
+        <PlusCircleIcon className="h-6 cursor-pointer hover:scale-125 transition-transform duration-200" />
+        <img
+          className="h-10 w-10 rounded-full"
+          src="https://skooncatlitter.com/wp-content/uploads/2021/08/blog-COVER-2000x1200px-1-1.jpg"
+          alt="user-avatar"
         />
       </div>
     </div>
