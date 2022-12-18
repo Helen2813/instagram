@@ -38,7 +38,7 @@ function Header() {
           <HomeIcon className="hidden md:inline-flex h-6 cursor-pointer hover:scale-125 transition-transform duration-200" />
           <PlusCircleIcon className="h-6 cursor-pointer hover:scale-125 transition-transform duration-200" />
           <img
-            className="h-10 w-10 rounded-full"
+            className="h-10 w-10 rounded-full object-cover"
             src="https://skooncatlitter.com/wp-content/uploads/2021/08/blog-COVER-2000x1200px-1-1.jpg"
             alt="user-avatar"
           />
