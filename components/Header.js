@@ -2,8 +2,11 @@ import React from 'react';
 import Image from "next/image";
 import { SearchIcon, PlusCircleIcon } from "@heroicons/react/outline";
 import { HomeIcon } from "@heroicons/react/solid";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 function Header() {
+  const { data: session } = useSession();
+
   return (
     <div className="shadow-sm border-b sticky top-0 bg-white z-30">
       <div className="flex items-center justify-between max-w-6xl mx-4 xl:mx-auto">
@@ -36,12 +39,19 @@ function Header() {
         </div>
         <div className="flex space-x-4 items-center">
           <HomeIcon className="hidden md:inline-flex h-6 cursor-pointer hover:scale-125 transition-transform duration-200" />
-          <PlusCircleIcon className="h-6 cursor-pointer hover:scale-125 transition-transform duration-200" />
-          <img
-            className="h-10 w-10 rounded-full object-cover"
-            src="https://skooncatlitter.com/wp-content/uploads/2021/08/blog-COVER-2000x1200px-1-1.jpg"
-            alt="user-avatar"
-          />
+          {session ? (
+            <>
+              <PlusCircleIcon className="h-6 cursor-pointer hover:scale-125 transition-transform duration-200" />
+              <img
+                className="h-10 w-10 rounded-full object-cover"
+                src={session.user.image}
+                alt="user-avatar"
+                onClick={signOut}
+              />
+            </>
+          ) : (
+            <button onClick={signIn}>Sign In</button>
+          )}
         </div>
       </div>
     </div>
