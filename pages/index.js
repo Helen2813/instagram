@@ -1,6 +1,7 @@
 import Head from 'next/head'
 import Header from "../components/Header";
 import Feed from "../components/Feed";
+import UploadModal from "../components/UploadModal";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
 
       <Header />
       <Feed />
+      <UploadModal />
     </div>
   )
 }
