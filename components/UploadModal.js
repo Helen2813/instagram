@@ -3,11 +3,18 @@ import { modalState } from "../atom/modalAtom";
 import { useRecoilState } from "recoil";
 import Modal from "react-modal";
 import { CameraIcon } from "@heroicons/react/outline";
+import { addDoc, collection, serverTimestamp, updateDoc, doc } from "firebase/firestore";
+import { db, storage } from "../firebase";
+import { useSession } from "next-auth/react";
+import { ref, uploadString, getDownloadURL } from "firebase/storage";
 
 function UploadModal() {
   const [isOpen, setIsOpen] = useRecoilState(modalState);
   const filePickerRef = useRef(null);
+  const captionRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { data: session } = useSession();
 
   const addImageToPost = (event) => {
     const reader = new FileReader();
@@ -22,6 +29,33 @@ function UploadModal() {
 
   const handleClose = () => {
     setIsOpen(false);
+    setSelectedFile(null);
+  }
+
+  const uploadPost = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    const docRef = await addDoc(collection(db, "posts"), {
+      caption: captionRef.current.value,
+      userName: session.user.name,
+      profileImage: session.user.image,
+      timestamp: serverTimestamp(),
+    });
+
+    const imageRef = ref(storage, `posts/${docRef.id}/image`);
+    await uploadString(imageRef, selectedFile, "data_url")
+      .then(() => {
+        async (snapshot) => {
+          const downloadURL = await getDownloadURL(imageRef);
+          await updateDoc(doc(db, "posts", docRef.id), {
+            image: downloadURL,
+          });
+        }
+      }
+    );
+    setIsOpen(false);
+    setIsLoading(false);
     setSelectedFile(null);
   }
 
@@ -55,11 +89,13 @@ function UploadModal() {
               type="text"
               maxLength={150}
               placeholder="Please enter your caption..."
+              ref={captionRef}
             />
             <button
               className="w-full bg-red-600 text-white p-2 shadow-md hover:brightness-125 disabled:bg-gray-200
               disabled:cursor-not-allowed disabled:hover:brightness-100"
-              disabled
+              disabled={!selectedFile || isLoading}
+              onClick={uploadPost}
             >
               Upload Post
             </button>
