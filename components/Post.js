@@ -1,9 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DotsHorizontalIcon, HeartIcon, ChatIcon, BookmarkIcon, EmojiHappyIcon } from "@heroicons/react/outline";
 import { useSession } from "next-auth/react";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase";
 
-function Post({ userName, userImage, img, caption }) {
+function Post({ userName, userImage, img, caption, id }) {
   const { data: session } = useSession();
+  const [comment, setComment] = useState("");
+
+  const sentComment = async (event) => {
+    event.preventDefault();
+    const commentToSend = comment;
+    setComment("");
+
+    await addDoc(collection(db, "posts", id, "comments"), {
+      comment: commentToSend,
+      username: session.user.userName,
+      userImage: session.user.image,
+      timestamp: serverTimestamp(),
+    });
+  }
 
   return (
     <div className="bg-white my-7 border rounded-md">
@@ -37,8 +53,21 @@ function Post({ userName, userImage, img, caption }) {
       {session && (
         <form className="flex items-center p-4">
           <EmojiHappyIcon className="h-7" />
-          <input className="border-none flex-1 focus:ring-0" type="text" placeholder="Enter your comment..."/>
-          <button className="text-blue-400 font-bold">Posts</button>
+          <input
+            className="border-none flex-1 focus:ring-0"
+            type="text"
+            placeholder="Enter your comment..."
+            value={comment}
+            onChange={(event) => setComment(event.target.value)}
+          />
+          <button
+            disabled={!comment.trim()}
+            className="text-blue-400 font-bold disabled:text-blue-200 cursor-pointer disabled:cursor-auto"
+            onClick={sentComment}
+            type="submit"
+          >
+            Post
+          </button>
         </form>
       )}
     </div>
