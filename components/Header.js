@@ -5,10 +5,12 @@ import { HomeIcon } from "@heroicons/react/solid";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useRecoilState } from "recoil";
 import { modalState } from "../atom/modalAtom";
+import { useRouter } from "next/router";
 
 function Header() {
   const { data: session } = useSession();
   const [ isOpen, setIsOpen ] = useRecoilState(modalState);
+  const router = useRouter();
 
   return (
     <div className="shadow-sm border-b sticky top-0 bg-white z-30">
@@ -20,6 +22,7 @@ function Header() {
             src="https://globalsew.com/wp-content/uploads/2021/12/59-590993_follow-us-on-instagram-logo-png-clipart-1024x365.png"
             className="object-contain mt-4"
             alt="logo"
+            onClick={() => router.push("/")}
           />
         </div>
         <div className="h-10 w-10 relative cursor-pointer lg:hidden">
@@ -29,6 +32,7 @@ function Header() {
             src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Instagram-Icon.png/640px-Instagram-Icon.png"
             className="object-contain"
             alt="logo"
+            onClick={() => router.push("/")}
           />
         </div>
         <div className="relative mt-1">
@@ -41,7 +45,10 @@ function Header() {
           />
         </div>
         <div className="flex space-x-4 items-center">
-          <HomeIcon className="hidden md:inline-flex h-6 cursor-pointer hover:scale-125 transition-transform duration-200" />
+          <HomeIcon
+            className="hidden md:inline-flex h-6 cursor-pointer hover:scale-125 transition-transform duration-200"
+            onClick={() => router.push("/")}
+          />
           {session ? (
             <>
               <PlusCircleIcon

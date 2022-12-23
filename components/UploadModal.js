@@ -44,7 +44,6 @@ function UploadModal() {
       timestamp: serverTimestamp(),
     });
 
-    console.log('docRef', docRef)
     const imageRef = ref(storage, `posts/${docRef.id}/image`);
     await uploadString(imageRef, selectedFile, "data_url").then(
       async (snapshot) => {
