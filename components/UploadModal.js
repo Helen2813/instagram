@@ -36,22 +36,22 @@ function UploadModal() {
     if (isLoading) return;
 
     setIsLoading(true);
+
     const docRef = await addDoc(collection(db, "posts"), {
       caption: captionRef.current.value,
-      userName: session.user.name,
-      profileImage: session.user.image,
+      username: session.user.userName,
+      profileImg: session.user.image,
       timestamp: serverTimestamp(),
     });
 
+    console.log('docRef', docRef)
     const imageRef = ref(storage, `posts/${docRef.id}/image`);
-    await uploadString(imageRef, selectedFile, "data_url")
-      .then(() => {
-        async (snapshot) => {
-          const downloadURL = await getDownloadURL(imageRef);
-          await updateDoc(doc(db, "posts", docRef.id), {
-            image: downloadURL,
-          });
-        }
+    await uploadString(imageRef, selectedFile, "data_url").then(
+      async (snapshot) => {
+        const downloadURL = await getDownloadURL(imageRef);
+        await updateDoc(doc(db, "posts", docRef.id), {
+          image: downloadURL,
+        });
       }
     );
     setIsOpen(false);
