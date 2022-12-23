@@ -1,12 +1,22 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DotsHorizontalIcon, HeartIcon, ChatIcon, BookmarkIcon, EmojiHappyIcon } from "@heroicons/react/outline";
 import { useSession } from "next-auth/react";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, onSnapshot, orderBy, query, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
+import Moment from "react-moment";
 
 function Post({ userName, userImage, img, caption, id }) {
   const { data: session } = useSession();
   const [comment, setComment] = useState("");
+  const [comments, setComments] = useState([]);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      query(collection(db, "posts", id, "comments"), orderBy("timestamp", "desc")),
+      (snapshot) =>  setComments(snapshot.docs),
+    );
+
+  }, [id]);
 
   const sentComment = async (event) => {
     event.preventDefault();
@@ -49,6 +59,22 @@ function Post({ userName, userImage, img, caption, id }) {
         <span className="font-bold mr-2">{userName}</span>
         {caption}
       </p>
+      {comments.length > 0 && (
+        <div className="mx-10 max-h-24 overflow-y-scroll scrollbar-none">
+          {comments.map(comment => (
+            <div key={comment.data().id} className="flex items-center space-x-2 mb-2">
+              <img
+                className="h-7 rounded-full object-cover"
+                src={comment.data().userImage}
+                alt="avatar"
+              />
+              <p className="font-semibold ">{comment.data().username}</p>
+              <p className="flex-1 truncate">{comment.data().comment}</p>
+              <Moment fromNow>{comment.data().timestamp?.toDate()}</Moment>
+            </div>
+          ))}
+        </div>
+      )}
 
       {session && (
         <form className="flex items-center p-4">
