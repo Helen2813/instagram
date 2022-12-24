@@ -1,7 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { DotsHorizontalIcon, HeartIcon, ChatIcon, BookmarkIcon, EmojiHappyIcon } from "@heroicons/react/outline";
+import { HeartIcon as HeartIconFilled } from "@heroicons/react/solid";
 import { useSession } from "next-auth/react";
-import { addDoc, collection, onSnapshot, orderBy, query, serverTimestamp } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+} from "firebase/firestore";
 import { db } from "../firebase";
 import Moment from "react-moment";
 
@@ -9,14 +20,30 @@ function Post({ userName, userImage, img, caption, id }) {
   const { data: session } = useSession();
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
+  const [hasLike, setHasLike] = useState(false);
+  const [likes, setLikes] = useState([]);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
       query(collection(db, "posts", id, "comments"), orderBy("timestamp", "desc")),
       (snapshot) =>  setComments(snapshot.docs),
     );
-
+    return unsubscribe;
   }, [id]);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, "posts", id, "likes"),
+      (snapshot) => setLikes(snapshot.docs)
+    );
+    return unsubscribe;
+  }, [db]);
+
+  useEffect(() => {
+    setHasLike(
+      likes.findIndex((like) => like.id === session?.user.uid) !== -1
+    );
+  }, [likes]);
 
   const sentComment = async (event) => {
     event.preventDefault();
@@ -29,6 +56,16 @@ function Post({ userName, userImage, img, caption, id }) {
       userImage: session.user.image,
       timestamp: serverTimestamp(),
     });
+  }
+
+  const likePost = async () => {
+    if (hasLike) {
+      await deleteDoc(doc(db, "posts", id, "likes", session.user.uid));
+    } else {
+      await setDoc(doc(db, "posts", id, "likes", session.user.uid), {
+        username: session.user.userName,
+      });
+    }
   }
 
   return (
@@ -48,7 +85,11 @@ function Post({ userName, userImage, img, caption, id }) {
       {session && (
         <div className="flex justify-between px-4 pt-4">
           <div className="flex space-x-4">
-            <HeartIcon className="btn" />
+            {hasLike ? (
+              <HeartIconFilled onClick={likePost} className="btn text-red-400" />
+            ) : (
+              <HeartIcon onClick={likePost} className="btn" />
+            )}
             <ChatIcon className="btn" />
           </div>
           <BookmarkIcon className="btn" />
@@ -62,7 +103,7 @@ function Post({ userName, userImage, img, caption, id }) {
       {comments.length > 0 && (
         <div className="mx-10 max-h-24 overflow-y-scroll scrollbar-none">
           {comments.map(comment => (
-            <div key={comment.data().id} className="flex items-center space-x-2 mb-2">
+            <div key={comment.id} className="flex items-center space-x-2 mb-2">
               <img
                 className="h-7 rounded-full object-cover"
                 src={comment.data().userImage}
